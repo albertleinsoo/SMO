@@ -7,6 +7,9 @@ public class TransactSource extends ActiveObject {
     private double lambda;
     private Buffer buffer;
 
+    /*для сбора статистики*/
+    public double timeLastTrCreated = -1;
+
     public TransactSource(int sNum, double pLambda, Buffer pBuffer){
 
         sourceNum = sNum;
@@ -17,20 +20,23 @@ public class TransactSource extends ActiveObject {
         buffer = pBuffer;
 
         nextEventTime = SmoApp.simpleFlow.getNextSimpleFlow(lambda);
-        SmoApp.logger.info(objectName+ ":: Created. nextEventTime = " + nextEventTime);
+        SmoApp.logger.fine(objectName+ ":: Created. nextEventTime = " + nextEventTime);
     }
 
     @Override
     void doAction(double pEventTime) {
-        SmoApp.logger.info("Src "+ sourceNum+":: doAction");
+        SmoApp.logger.fine("Src "+ sourceNum+":: doAction");
 
         /*генерация заявки*/
         Transact newTransact = new Transact(createdCount, nextEventTime, this);
         createdCount++;
 
+        timeLastTrCreated = nextEventTime;
         //SmoApp.logger.info("nextEventTime " + nextEventTime);
         nextEventTime = nextEventTime + SmoApp.simpleFlow.getNextSimpleFlow(lambda);
-        SmoApp.logger.info(objectName+ ":: nextEventTime "+ nextEventTime);
+        SmoApp.logger.fine(objectName+ ":: nextEventTime "+ nextEventTime);
+
+        SmoApp.printStat.printStepStatistic(getObjectName()+" generated "+ newTransact.getObjectName(),timeLastTrCreated);
 
         buffer.addToBufferDispatcher(newTransact);
     }

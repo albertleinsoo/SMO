@@ -32,7 +32,7 @@ public class Transact {
         timeProcessed = -1;
         timeReject = -1;
 
-        SmoApp.logger.info(objectName+":: Created at "+ timeCreated);
+        SmoApp.logger.fine(objectName+":: Created at "+ timeCreated);
     }
     //todo finalize
     /*getters & setters*/

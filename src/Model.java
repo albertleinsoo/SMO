@@ -81,9 +81,21 @@ public class Model {
         } else {
             return true;
         }
-
     }
+
+
     /*getters & setters */
+    public Vector<TransactSource> getTransactSourcesVector(){
+        return transactSourcesVector;
+    }
+
+    public Vector<Device> getDevicesVector(){
+        return devicesVector;
+    }
+
+    public Buffer getBuffer() {
+        return buffer;
+    }
 
     public void setSourceCount(int sourceCount) {
         this.sourceCount = sourceCount;

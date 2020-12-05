@@ -19,46 +19,40 @@ public class Buffer extends ActiveObject {
             bufferTransactVector.add(i,null);
         }
 
-        SmoApp.logger.info("Buffer:: Created with "+ bufferSize + " positions");
+        SmoApp.logger.fine("Buffer:: Created with "+ bufferSize + " positions");
     }
 
 
 
     public void addToBufferDispatcher(Transact pTransact){
-        SmoApp.logger.info("Buffer:: resived "+ pTransact.getObjectName());
+        SmoApp.logger.fine("Buffer:: resived "+ pTransact.getObjectName());
 
         /*есть ли свободный прибор*/
-        Device curDev = findFreeDevice();
-
-        if (curDev != null){
-
-            SmoApp.logger.info("Buffer:: "+ pTransact.getObjectName() + " sended to device "+ curDev.getObjectName());
-            curDev.useDevice(pTransact);
-
+        if (findFreeDevice()){
+            addTransactToDeviceDispatcher(pTransact);
         }
         else{
-            //todo поставить в буфер. или отказ
             int freePos = findFreePosition();
-            SmoApp.logger.info("Buffer:: freePosition= "+ freePos);
+            SmoApp.logger.fine("Buffer:: freePosition= "+ freePos);
             if (freePos >= 0){
                 bufferTransactVector.setElementAt(pTransact, freePos);
                 pTransact.setTimeAddToBuffer(pTransact.getLastEventTime());
-                SmoApp.logger.info("Buffer:: Position= "+freePos+" used by "+pTransact.getObjectName());
+                SmoApp.logger.fine("Buffer:: Position= "+freePos+" used by "+pTransact.getObjectName());
             } else{ /*уничтожение */
                 int minPos = findMinTimePosition();
                 bufferTransactVector.elementAt(minPos).setTimeReject(pTransact.getLastEventTime());
                 bufferTransactVector.elementAt(minPos).setLastEventTime(pTransact.getLastEventTime());
 
-                SmoApp.logger.info("Buffer:: Position= "+minPos+" Reject transact "
+                SmoApp.logger.fine("Buffer:: Position= "+minPos+" Reject transact "
                         + bufferTransactVector.elementAt(minPos).getObjectName() + " at time = "+ pTransact.getLastEventTime());
 
+                pTransact.setTimeAddToBuffer(pTransact.getLastEventTime());
                 bufferTransactVector.setElementAt(pTransact,minPos);
-                SmoApp.logger.info("Buffer:: Position= "+minPos+" used by "+pTransact.getObjectName()+" at "+ pTransact.getLastEventTime());
+
+                SmoApp.logger.fine("Buffer:: Position= "+minPos+" used by "+pTransact.getObjectName()+" at "+ pTransact.getLastEventTime());
             }
         }
-
     }
-
 
     public void getFromBufferDispatcher(){
 
@@ -76,7 +70,7 @@ public class Buffer extends ActiveObject {
                 } else {
                     nextPosToGet = i + 1;
                 }
-                SmoApp.logger.info("Buffer:: Position= "+ i + " released "+curTrans.getObjectName() +
+                SmoApp.logger.fine("Buffer:: Position= "+ i + " released "+curTrans.getObjectName() +
                         " . Next position to search= "+ nextPosToGet);
                 posFound = true;
             }
@@ -95,7 +89,7 @@ public class Buffer extends ActiveObject {
                     } else {
                         nextPosToGet = i + 1;
                     }
-                    SmoApp.logger.info("Buffer:: Position= "+ i + " released "+curTrans.getObjectName() +
+                    SmoApp.logger.fine("Buffer:: Position= "+ i + " released "+curTrans.getObjectName() +
                             " . Next position to search= "+ nextPosToGet);
                     posFound = true;
                 }
@@ -104,45 +98,52 @@ public class Buffer extends ActiveObject {
 
         /*поиск следующего прибора 'по кольцу' */
         if (curTrans != null) {
-            /*поиск метки прибора*/
-            int curDevToUseNum = 0;
-            for (int i = 0; i < deviceVectorPtr.size(); i++){
-                if (deviceVectorPtr.elementAt(i).getIsNextToUse()){
-                    curDevToUseNum = i;
-                    break;
-                }
-            }
+           addTransactToDeviceDispatcher(curTrans);
+        } else {
+            SmoApp.logger.fine("Buffer:: no transacts in buffer" + " . Next position to search= "+ nextPosToGet);
+        }
 
-            /*поиск 'по кольцу' от текущей позиции указателя до последнего прибора*/
-            int newCurDevToUseNum = -1;
-            for (int i = curDevToUseNum; i<deviceVectorPtr.size(); i++){
+    }
+
+    /*выбор следующего прибора для обслуживания
+    * pTransact != null*/
+
+    private void addTransactToDeviceDispatcher(Transact pTransact){
+        /*поиск метки прибора*/
+        int curDevToUseNum = 0;
+        for (int i = 0; i < deviceVectorPtr.size(); i++){
+            if (deviceVectorPtr.elementAt(i).getIsNextToUse()){
+                curDevToUseNum = i;
+                break;
+            }
+        }
+
+        /*поиск 'по кольцу' от текущей позиции указателя до последнего прибора*/
+        int newCurDevToUseNum = -1;
+        for (int i = curDevToUseNum; i<deviceVectorPtr.size(); i++){
+            if (!deviceVectorPtr.elementAt(i).getIsInUse()){
+                newCurDevToUseNum = i;
+            }
+        }
+
+        if (newCurDevToUseNum == -1){
+            for (int i = 0; i<curDevToUseNum; i++){
                 if (!deviceVectorPtr.elementAt(i).getIsInUse()){
                     newCurDevToUseNum = i;
                 }
             }
-
-            if (newCurDevToUseNum == -1){
-                for (int i = 0; i<curDevToUseNum; i++){
-                    if (!deviceVectorPtr.elementAt(i).getIsInUse()){
-                        newCurDevToUseNum = i;
-                    }
-                }
-            }
-
-            deviceVectorPtr.elementAt(newCurDevToUseNum).useDevice(curTrans);
-            deviceVectorPtr.elementAt(newCurDevToUseNum).setNextToUse(false);
-
-            SmoApp.logger.info("Buffer:: newCurDevToUseNum= " + newCurDevToUseNum);
-            if (newCurDevToUseNum + 1 >= deviceVectorPtr.size()){
-                deviceVectorPtr.elementAt(0).setNextToUse(true);
-            } else {
-                deviceVectorPtr.elementAt(newCurDevToUseNum + 1).setNextToUse(true);
-            }
-
-        } else {
-            SmoApp.logger.info("Buffer:: no transacts in buffer" + " . Next position to search= "+ nextPosToGet);
         }
 
+        deviceVectorPtr.elementAt(newCurDevToUseNum).useDevice(pTransact);
+        deviceVectorPtr.elementAt(newCurDevToUseNum).setNextToUse(false);
+        SmoApp.logger.fine("Buffer:: "+ pTransact.getObjectName() + " sent to device "+ deviceVectorPtr.elementAt(newCurDevToUseNum).getObjectName());
+
+        SmoApp.logger.fine("Buffer:: newCurDevToUseNum= " + newCurDevToUseNum);
+        if (newCurDevToUseNum + 1 >= deviceVectorPtr.size()){
+            deviceVectorPtr.elementAt(0).setNextToUse(true);
+        } else {
+            deviceVectorPtr.elementAt(newCurDevToUseNum + 1).setNextToUse(true);
+        }
     }
 
     /*найти первую свободную ячейку в буфере*/
@@ -168,26 +169,27 @@ public class Buffer extends ActiveObject {
         return minPos;
     }
 
-    public void addTransactToDeviceDispatcher(Device deviceToAddTransact){
-
-    }
-    private Device findFreeDevice(){
+    private boolean findFreeDevice(){
         /*поиск свободного прибора*/
         int i=0;
         while(i < deviceVectorPtr.size()){
             if (!deviceVectorPtr.elementAt(i).getIsInUse()){
-                return deviceVectorPtr.elementAt(i);
+                return true;
             }
             i++;
         }
 
-        return null;
+        return false;
     }
 
     @Override
     void doAction(double pEventTime) {
     }
     /*getters & setters */
+
+    public Vector<Transact> getTransactVector(){
+        return bufferTransactVector;
+    }
 
     public int getBufferSize() {
         return bufferSize;

@@ -4,6 +4,7 @@ public class SmoApp {
     /*инициализация логгера*/
     public static final Logger logger = Logger.getLogger(SmoApp.class.getName());
     public static final EventFlow simpleFlow = new EventFlow();
+    public static PrintStat printStat;
 
     public static void main(String[] args) {
 
@@ -12,14 +13,15 @@ public class SmoApp {
         /* количество реализаций модели */
         long maxTransactCount = 10; //TODO определить количество реализаций
         /*интенсивность источников*/
-        double scrLambda = 0.1;
-        double deviceLambda = 0.05;
+        double scrLambda = 1;
+        double deviceLambda = 0.01;
+
         /* Цикл моделирования*/
         //for (long i = 1; i <=realizationCount; i++){
             /* инициализация модели*/
-            Model smoModel = new Model(2,2,3, scrLambda , deviceLambda, maxTransactCount);
-            smoModel.runModel();
-
+        Model smoModel = new Model(2,2,3, scrLambda , deviceLambda, maxTransactCount);
+        printStat = new PrintStat(smoModel);
+        smoModel.runModel();
 
         //} // конец цикла моделирования
 

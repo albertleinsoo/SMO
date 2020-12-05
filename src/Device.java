@@ -38,12 +38,15 @@ public class Device extends ActiveObject{
         transactInDevice = pTransact;
         transactInDevice.setTimeAddToDevice(pTransact.getLastEventTime());
 
-        nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextExpFlow(lambdaDevice);
-        SmoApp.logger.info(objectName + ":: in use. Transact: "+ transactInDevice.getObjectName() + " nextEventTime "+ nextEventTime);
+        //todo експоненциальный закон
+        nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextSimpleFlow(lambdaDevice);
+        SmoApp.logger.fine(objectName + ":: in use. Transact: "+ transactInDevice.getObjectName() + " nextEventTime "+ nextEventTime);
+
+        SmoApp.printStat.printStepStatistic(getObjectName()+" received "+ pTransact.getObjectName(),pTransact.getTimeAddToDevice());
     }
 
     public void freeDevice(){
-        SmoApp.logger.info(objectName + ":: is free. EventTime " + nextEventTime);
+        SmoApp.logger.fine(objectName + ":: is free. EventTime " + nextEventTime);
 
         isInUse = false;
 
@@ -53,6 +56,9 @@ public class Device extends ActiveObject{
         /*прибор свободен*/
         nextEventTime = -1;
 
+        SmoApp.printStat.printStepStatistic(getObjectName()+" released "+ transactInDevice.getObjectName(),transactInDevice.getTimeAddToDevice());
+
+        transactInDevice = null;
         //todo убить транзакцию. записать статистику
     }
 

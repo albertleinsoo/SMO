@@ -10,7 +10,7 @@ public class EventFlow {
 
     void EventFlow(){
         rndTime = new Date();
-        SmoApp.logger.info("EventFlow::Start");
+        SmoApp.logger.fine("EventFlow::Start");
     }
 
     double getNextSimpleFlow(double pLambda){

@@ -9,10 +9,12 @@ public class Device extends ActiveObject{
     private boolean isNextToUse;
     /*интенсивность работы прибора*/
     private double lambdaDevice;
+    /*буфер*/
+    private Buffer bufferRef;
 
     private Transact transactInDevice;
 
-    public Device(int dNum, double pLambda){
+    public Device(int dNum, double pLambda, Buffer pBufferRef){
         deviceNum = dNum;
         objectName = "Dev " + deviceNum;
         isInUse = false;
@@ -20,13 +22,15 @@ public class Device extends ActiveObject{
         transactInDevice = null;
         lambdaDevice = pLambda;
 
+        bufferRef = pBufferRef;
+
         SmoApp.logger.info(objectName + ":: Created");
     }
 
     @Override
     void doAction(double pEventTime) {
         freeDevice();
-        //todo команда буферу на выбор заявки.
+        bufferRef.getFromBufferDispatcher();
     }
 
     public void useDevice(Transact pTransact){
@@ -34,20 +38,22 @@ public class Device extends ActiveObject{
         transactInDevice = pTransact;
         transactInDevice.setTimeAddToDevice(pTransact.getLastEventTime());
 
-
-        nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextSimpleFlow(lambdaDevice);
-        SmoApp.logger.info(objectName + ":: in use. Transact: "+ transactInDevice.getInitialSource().getSourceNum() +"."+
-                transactInDevice.getTransactNum() + " nextEventTime "+ nextEventTime);
+        nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextExpFlow(lambdaDevice);
+        SmoApp.logger.info(objectName + ":: in use. Transact: "+ transactInDevice.getObjectName() + " nextEventTime "+ nextEventTime);
     }
 
     public void freeDevice(){
         SmoApp.logger.info(objectName + ":: is free. EventTime " + nextEventTime);
 
         isInUse = false;
-        nextEventTime = -1;
-        transactInDevice.setLastEventTime(nextEventTime);
-        transactInDevice.getInitialSource().setProcessedCount(transactInDevice.getInitialSource().getProcessedCount() + 1);
 
+        transactInDevice.setLastEventTime(nextEventTime);
+        transactInDevice.setTimeProcessed(nextEventTime);
+        transactInDevice.getInitialSource().setProcessedCount(transactInDevice.getInitialSource().getProcessedCount() + 1);
+        /*прибор свободен*/
+        nextEventTime = -1;
+
+        //todo убить транзакцию. записать статистику
     }
 
     /*getters & setters */

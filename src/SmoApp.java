@@ -12,12 +12,12 @@ public class SmoApp {
         /* количество реализаций модели */
         long maxTransactCount = 10; //TODO определить количество реализаций
         /*интенсивность источников*/
-        double lambda = 0.1;
-
+        double scrLambda = 0.1;
+        double deviceLambda = 0.05;
         /* Цикл моделирования*/
         //for (long i = 1; i <=realizationCount; i++){
             /* инициализация модели*/
-            Model smoModel = new Model(1,1,1, lambda, maxTransactCount);
+            Model smoModel = new Model(2,2,3, scrLambda , deviceLambda, maxTransactCount);
             smoModel.runModel();
 
 

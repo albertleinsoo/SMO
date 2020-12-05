@@ -24,4 +24,15 @@ public class EventFlow {
         SmoApp.logger.finest("EventFlow::getNextSimpleFlow result = "+ result);
         return result;
     }
+
+    double getNextExpFlow(double pLambda){
+        rndTime = new Date();
+        random = new Random(rndTime.getTime());
+
+        double rndVal = random.nextDouble();
+
+        double result = (pLambda * Math.exp(-pLambda * rndVal));
+        SmoApp.logger.finest("EventFlow::getNextExpFlow result = "+ result);
+        return result;
+    }
 }

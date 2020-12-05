@@ -1,5 +1,5 @@
 public class Transact {
-
+    private String objectName;
     /*номер заявки*/
     private long transactNum;
     /* номер источника, сгенерировавшего заявку*/
@@ -10,6 +10,8 @@ public class Transact {
     private double timeAddToBuffer;
     /*время добавления в прибор*/
     private  double timeAddToDevice;
+    /*время конца обработки*/
+    private double timeProcessed;
     /*время отказа*/
     private double timeReject;
 
@@ -17,20 +19,27 @@ public class Transact {
     private double lastEventTime;
 
 
+
     public Transact(long transNum, double createTime,TransactSource pInitialSource){
         transactNum = transNum;
         initialSource = pInitialSource;
         timeCreated = createTime;
         lastEventTime = createTime;
+        objectName = "Tr"+initialSource.getSourceNum()+"."+transactNum;
 
         timeAddToBuffer = -1;
         timeAddToDevice = -1;
+        timeProcessed = -1;
         timeReject = -1;
 
-        SmoApp.logger.info("Transact "+ initialSource.getSourceNum() +"."+transactNum +":: Created at "+ timeCreated);
+        SmoApp.logger.info(objectName+":: Created at "+ timeCreated);
     }
-
+    //todo finalize
     /*getters & setters*/
+
+    public String getObjectName() {
+        return objectName;
+    }
 
     public TransactSource getInitialSource() {
         return initialSource;
@@ -66,6 +75,14 @@ public class Transact {
 
     public void setTimeAddToBuffer(double timeAddToBuffer) {
         this.timeAddToBuffer = timeAddToBuffer;
+    }
+
+    public void setTimeProcessed(double timeProcessed) {
+        this.timeProcessed = timeProcessed;
+    }
+
+    public double getTimeProcessed() {
+        return timeProcessed;
     }
 
     public double getTimeReject() {

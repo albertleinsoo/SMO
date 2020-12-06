@@ -34,7 +34,6 @@ public class Transact {
 
         SmoApp.logger.fine(objectName+":: Created at "+ timeCreated);
     }
-    //todo finalize
     /*getters & setters*/
 
     public String getObjectName() {

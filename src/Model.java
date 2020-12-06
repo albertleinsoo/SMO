@@ -8,6 +8,7 @@ public class Model {
     private Vector<Double> sourceLambda;
     private Vector<Double> deviceLambda;
     private long maxTransactCount;
+    private double lastModelEventTime;
 
     public Buffer buffer;
 
@@ -23,6 +24,7 @@ public class Model {
         sourceLambda  = pSrcLambda;
         deviceLambda = pDevLambda;
         maxTransactCount = pMaxTransactCount;
+        lastModelEventTime = -1;
 
         transactSourcesVector = new Vector<TransactSource>(sourceCount);
         devicesVector = new Vector<Device>(deviceCount);
@@ -46,6 +48,9 @@ public class Model {
     }
 
     void runModel() {
+
+        /**/
+
         while (!checkStop()) {
             //transactSourcesVector.elementAt(0).doAction(0);
             curActiveObject = transactSourcesVector.elementAt(0);
@@ -64,12 +69,46 @@ public class Model {
                     curActiveObject = devicesVector.elementAt(i);
                 }
             }
-
             curActiveObject.doAction(minEventTime);
-
+            lastModelEventTime = minEventTime;
         }
-    }
 
+        /*завершение обслуживания заявок в буфере и приборах после окончания генерации заявок*/
+        /*обнуление следующего внемени генерации заявки*/
+        for (int i = 0; i < transactSourcesVector.size(); i++) {
+            transactSourcesVector.elementAt(i).setNextEventTime(-1);
+        }
+
+        SmoApp.logger.fine("Model:: runModel. End of transact generation. Waiting for processing all transacts in devices.");
+        SmoApp.printStat.printStepStatistic("Model:: runModel. End of transact generation.", 0);
+
+        double minEventTime = 0;
+        while (minEventTime != -1) {
+            minEventTime = -1;
+            for (int i = 0; i < devicesVector.size(); i++){
+                if (devicesVector.elementAt(i).getIsInUse() &&
+                        (devicesVector.elementAt(i).getNextEventTime() > minEventTime)){
+                    minEventTime = devicesVector.elementAt(i).getNextEventTime();
+                }
+            }
+            for (int i = 0; i < devicesVector.size(); i++) {
+                if (devicesVector.elementAt(i).getIsInUse() &&
+                        (devicesVector.elementAt(i).getNextEventTime() <= minEventTime)) {
+
+                    minEventTime = devicesVector.elementAt(i).getNextEventTime();
+                    curActiveObject = devicesVector.elementAt(i);
+                }
+            }
+            /*не октивируем, если нет активного прибора*/
+            if (minEventTime != -1) {
+                curActiveObject.doAction(minEventTime);
+                lastModelEventTime = minEventTime;
+            }
+        }
+
+        SmoApp.logger.fine("Model:: runModel. Model End");
+        SmoApp.printStat.printStepStatistic("Model:: runModel. Model End", lastModelEventTime);
+    }
     /*проверка достижения заданного количества заявок*/
     private boolean checkStop(){
         long totalTransactCount = 1;
@@ -87,6 +126,10 @@ public class Model {
     /*getters & setters */
     public Vector<TransactSource> getTransactSourcesVector(){
         return transactSourcesVector;
+    }
+
+    public double getLastModelEventTime() {
+        return lastModelEventTime;
     }
 
     public Vector<Device> getDevicesVector(){

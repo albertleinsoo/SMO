@@ -24,7 +24,6 @@ public class SmoApp {
         /*интенсивности приборов*/
         Vector<Double> devicesLambda = new Vector<Double>();
 
-        //todo прочитать параметры из файла
         try{
             FileReader initialReader = new FileReader("init.txt");
             BufferedReader reader = new BufferedReader(initialReader);

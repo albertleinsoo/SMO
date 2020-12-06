@@ -4,6 +4,8 @@ public class TransactSource extends ActiveObject {
     private long createdCount;
     /* обработанные и отказанные заявки*/
     private long processedCount;
+    private long rejectedCount;
+
     private double lambda;
     private Buffer buffer;
 
@@ -15,12 +17,13 @@ public class TransactSource extends ActiveObject {
         sourceNum = sNum;
         objectName = "Src " + sourceNum;
         createdCount = 0;
+        rejectedCount = 0;
         processedCount = 0;
         lambda = pLambda;
         buffer = pBuffer;
 
         nextEventTime = SmoApp.simpleFlow.getNextSimpleFlow(lambda);
-        SmoApp.logger.fine(objectName+ ":: Created. nextEventTime = " + nextEventTime);
+        SmoApp.logger.info(objectName+ ":: Created. nextEventTime = " + nextEventTime);
     }
 
     @Override
@@ -43,12 +46,20 @@ public class TransactSource extends ActiveObject {
 
     /*getters & setters */
 
-    public int getSourceNum() {
-        return sourceNum;
+    public void setRejectedCount(long rejectedCount) {
+        this.rejectedCount = rejectedCount;
     }
 
-    public void setSourceNum(int sourceNum) {
-        this.sourceNum = sourceNum;
+    public long getRejectedCount() {
+        return rejectedCount;
+    }
+
+    public void setNextEventTime (double pTime){
+        nextEventTime = pTime;
+    }
+
+    public int getSourceNum() {
+        return sourceNum;
     }
 
     public long getCreatedCount() {

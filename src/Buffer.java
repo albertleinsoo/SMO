@@ -37,6 +37,8 @@ public class Buffer extends ActiveObject {
                 bufferTransactVector.setElementAt(pTransact, freePos);
                 pTransact.setTimeAddToBuffer(pTransact.getLastEventTime());
                 SmoApp.logger.fine("Buffer:: Position= "+freePos+" used by "+pTransact.getObjectName());
+                SmoApp.printStat.printStepStatistic("Buffer Position= "+freePos+" used by "+pTransact.getObjectName(),
+                        pTransact.getLastEventTime());
             } else{ /*уничтожение */
                 int minPos = findMinTimePosition();
                 bufferTransactVector.elementAt(minPos).setTimeReject(pTransact.getLastEventTime());
@@ -45,16 +47,24 @@ public class Buffer extends ActiveObject {
                 SmoApp.logger.fine("Buffer:: Position= "+minPos+" Reject transact "
                         + bufferTransactVector.elementAt(minPos).getObjectName() + " at time = "+ pTransact.getLastEventTime());
 
+                Transact rejectedTransact = bufferTransactVector.elementAt(minPos);
+                /*увеличиваем кол-во отказанных заявок источнику*/
+                rejectedTransact.getInitialSource().setRejectedCount(rejectedTransact.getInitialSource().getRejectedCount() +1);
                 pTransact.setTimeAddToBuffer(pTransact.getLastEventTime());
                 bufferTransactVector.setElementAt(pTransact,minPos);
 
                 SmoApp.logger.fine("Buffer:: Position= "+minPos+" used by "+pTransact.getObjectName()+" at "+ pTransact.getLastEventTime());
+
+                SmoApp.printStat.printStepStatistic("Buffer:: Position= "+minPos+" Reject transact "
+                                + rejectedTransact.getObjectName() + " at time = "+ rejectedTransact.getTimeReject() +
+                                " Position used by "+pTransact.getObjectName(),
+                                pTransact.getLastEventTime());
             }
         }
     }
 
     public void getFromBufferDispatcher(){
-
+        SmoApp.logger.fine("Buffer:: getFromBufferDispatcher() Start");
         Transact curTrans = null;
         boolean posFound = false;
         /*поиск 'по кольцу' от текущей позиции указателя до конца буфера*/
@@ -69,9 +79,10 @@ public class Buffer extends ActiveObject {
                 } else {
                     nextPosToGet = i + 1;
                 }
-                SmoApp.logger.fine("Buffer:: Position= "+ i + " released "+curTrans.getObjectName() +
+                SmoApp.logger.fine("Buffer1:: Position= "+ i + " released "+curTrans.getObjectName() +
                         " . Next position to search= "+ nextPosToGet);
                 posFound = true;
+                break;
             }
         }
 
@@ -88,9 +99,10 @@ public class Buffer extends ActiveObject {
                     } else {
                         nextPosToGet = i + 1;
                     }
-                    SmoApp.logger.fine("Buffer:: Position= "+ i + " released "+curTrans.getObjectName() +
+                    SmoApp.logger.fine("Buffer2:: Position= "+ i + " released "+curTrans.getObjectName() +
                             " . Next position to search= "+ nextPosToGet);
                     posFound = true;
+                    break;
                 }
             }
         }

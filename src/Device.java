@@ -9,6 +9,10 @@ public class Device extends ActiveObject{
     private double lambdaDevice;
     /*буфер*/
     private Buffer bufferRef;
+    /*обработанные заявки*/
+    private long processedTransactCount;
+    /*общее время занятости прибора*/
+    private double totalUsedTime;
 
     private Transact transactInDevice;
 
@@ -19,6 +23,8 @@ public class Device extends ActiveObject{
         isNextToUse = false;
         transactInDevice = null;
         lambdaDevice = pLambda;
+        processedTransactCount = 0;
+        totalUsedTime = 0;
 
         bufferRef = pBufferRef;
 
@@ -36,7 +42,11 @@ public class Device extends ActiveObject{
         transactInDevice = pTransact;
         transactInDevice.setTimeAddToDevice(pTransact.getLastEventTime());
 
-        nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextExpFlow(lambdaDevice);
+
+        double tmpDeltaTime = SmoApp.simpleFlow.getNextExpFlow(lambdaDevice);
+        totalUsedTime=+ tmpDeltaTime;
+        nextEventTime = transactInDevice.getLastEventTime() + tmpDeltaTime;
+
         SmoApp.logger.fine(objectName + ":: in use. Transact: "+ transactInDevice.getObjectName() + " nextEventTime "+ nextEventTime);
 
         SmoApp.printStat.printStepStatistic(getObjectName()+" received "+ pTransact.getObjectName(),pTransact.getTimeAddToDevice());
@@ -52,14 +62,28 @@ public class Device extends ActiveObject{
         transactInDevice.getInitialSource().setProcessedCount(transactInDevice.getInitialSource().getProcessedCount() + 1);
         /*прибор свободен*/
         nextEventTime = -1;
+        processedTransactCount++;
 
         SmoApp.printStat.printStepStatistic(getObjectName()+" released "+ transactInDevice.getObjectName(),transactInDevice.getTimeAddToDevice());
 
         transactInDevice = null;
-        //todo убить транзакцию. записать статистику
     }
 
     /*getters & setters */
+
+    public String getTransactInDevName(){
+        if (transactInDevice != null ){
+            return transactInDevice.getObjectName();
+        } else
+        {
+            return "-";
+        }
+
+    }
+
+    public double getTotalUsedTime() {
+        return totalUsedTime;
+    }
 
     public int getDeviceNum() {
         return deviceNum;

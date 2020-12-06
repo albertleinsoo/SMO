@@ -5,8 +5,8 @@ public class Model {
     private int sourceCount;
     private int deviceCount;
     private int bufferSize;
-    private double sourceLambda;
-    private double deviceLambda;
+    private Vector<Double> sourceLambda;
+    private Vector<Double> deviceLambda;
     private long maxTransactCount;
 
     public Buffer buffer;
@@ -15,8 +15,7 @@ public class Model {
     private Vector<Device> devicesVector;
     private ActiveObject curActiveObject;
 
-    //todo сделать разные интенсивности приборов и источников
-    public Model(int srcCnt, int devCnt, int bSize, double pSrcLambda, double pDevLambda, long pMaxTransactCount){
+    public Model(int srcCnt, int devCnt, int bSize, Vector<Double> pSrcLambda, Vector<Double> pDevLambda, long pMaxTransactCount){
         SmoApp.logger.info("Model::Start");
         sourceCount = srcCnt;
         deviceCount = devCnt;
@@ -33,16 +32,17 @@ public class Model {
         buffer = new Buffer(bufferSize,devicesVector);
         /* инициализация источников*/
         for (int i = 0; i <sourceCount; i++){
-            transactSourcesVector.add(new TransactSource(i, pSrcLambda, buffer));
+            transactSourcesVector.add(new TransactSource(i, pSrcLambda.elementAt(i).doubleValue(), buffer));
         }
 
         /*инициализация приборов*/
         for (int i = 0; i < deviceCount; i++){
-            devicesVector.add(new Device(i, pDevLambda, buffer));
+            devicesVector.add(new Device(i, pDevLambda.elementAt(i).doubleValue(), buffer));
         }
         /*изначально выбор свободного прибора начинается с первого. далее по кольцу*/
         devicesVector.elementAt(0).setNextToUse(true);
 
+        SmoApp.logger.info("Model:: SrcsLambda " + pSrcLambda + " DevicesLambda " + pDevLambda);
     }
 
     void runModel() {

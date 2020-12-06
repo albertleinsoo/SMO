@@ -1,4 +1,3 @@
-import java.util.Iterator;
 import java.util.Vector;
 
 public class Buffer extends ActiveObject {

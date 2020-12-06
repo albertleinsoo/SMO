@@ -1,8 +1,6 @@
 import java.util.Random;
 import java.util.Date;
 
-//todo закон для device
-
 public class EventFlow {
     /**/
     private Date rndTime;

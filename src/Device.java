@@ -1,5 +1,3 @@
-import javax.management.MBeanException;
-
 public class Device extends ActiveObject{
 
     private int deviceNum;
@@ -38,7 +36,6 @@ public class Device extends ActiveObject{
         transactInDevice = pTransact;
         transactInDevice.setTimeAddToDevice(pTransact.getLastEventTime());
 
-        //todo експоненциальный закон
         nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextExpFlow(lambdaDevice);
         SmoApp.logger.fine(objectName + ":: in use. Transact: "+ transactInDevice.getObjectName() + " nextEventTime "+ nextEventTime);
 

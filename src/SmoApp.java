@@ -13,8 +13,8 @@ public class SmoApp {
         /* количество реализаций модели */
         long maxTransactCount = 10; //TODO определить количество реализаций
         /*интенсивность источников*/
-        double scrLambda = 1;
-        double deviceLambda = 0.01;
+        double scrLambda = 0.1;
+        double deviceLambda = 0.1;
 
         /* Цикл моделирования*/
         //for (long i = 1; i <=realizationCount; i++){

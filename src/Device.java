@@ -39,7 +39,7 @@ public class Device extends ActiveObject{
         transactInDevice.setTimeAddToDevice(pTransact.getLastEventTime());
 
         //todo експоненциальный закон
-        nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextSimpleFlow(lambdaDevice);
+        nextEventTime = transactInDevice.getLastEventTime() + SmoApp.simpleFlow.getNextExpFlow(lambdaDevice);
         SmoApp.logger.fine(objectName + ":: in use. Transact: "+ transactInDevice.getObjectName() + " nextEventTime "+ nextEventTime);
 
         SmoApp.printStat.printStepStatistic(getObjectName()+" received "+ pTransact.getObjectName(),pTransact.getTimeAddToDevice());

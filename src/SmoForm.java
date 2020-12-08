@@ -1,9 +1,6 @@
-package SmoForm;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class SmoForm extends JFrame {
@@ -22,7 +19,7 @@ public class SmoForm extends JFrame {
         this.setContentPane(rootPanel);
         this.pack();
         this.setLocationRelativeTo(null);
-        
+
         nextStepBtn.setActionCommand("Next step");
         endModelingBtn.setActionCommand("Finish modeling");
 

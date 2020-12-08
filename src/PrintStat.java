@@ -1,5 +1,3 @@
-import SmoForm.SmoForm;
-
 import javax.swing.table.DefaultTableModel;
 import java.util.Vector;
 
@@ -73,8 +71,8 @@ public class PrintStat {
         /*todo тестирование отображения*/
         /*данные для таблиц*/
         Object srcData[][] = new Object[statModel.getSourceCount()][9];
-        Object devData[][] = new Object[statModel.getDeviceCount()][5];
-        Object bufData[][] = new Object[statModel.getBufferSize()][4];
+        Object devData[][] = new Object[statModel.getDeviceCount()][6];
+        Object bufData[][] = new Object[statModel.getBufferSize()][5];
 
         /*запись данных для таблицы источников*/
         for ( int i=0; i< statModel.getSourceCount(); i++){
@@ -121,7 +119,7 @@ public class PrintStat {
         for (int i = 0; i< statModel.getDeviceCount(); i++){
             devData[i][0] = new String(String.valueOf(statDeviceVector.elementAt(i).getObjectName()));
             /*j=5, так как 5 столюцов*/
-            for (int j = 1; j<5;j++){
+            for (int j = 1; j<6;j++){
                 switch (j){
                     case (1):/*Next Time*/
                         devData[i][j] = new String(String.valueOf(statDeviceVector.elementAt(i).getNextEventTime()));
@@ -140,6 +138,11 @@ public class PrintStat {
                     case (4):/*Time in use*/
                         devData[i][j] = new String(String.valueOf(statDeviceVector.elementAt(i).getTotalUsedTime()));
                         break;
+                    case (5):/*Next to use*/
+                        if (statDeviceVector.elementAt(i).getIsNextToUse()){
+                            devData[i][j] = new String(String.valueOf("|||||||||"));
+                        }
+                        break;
                 }
             }
         } /*\\запись данных для таблицы приборов*/
@@ -147,8 +150,8 @@ public class PrintStat {
         /*запись данных для таблицы буфера*/
         for ( int i=0; i< statModel.getBufferSize(); i++){
             bufData[i][0] = new String(String.valueOf("Buf "+i)); /*position*/
-            /*j=4, так как 4 столбца*/
-            for (int j = 0; j< statModel.getBufferSize();j++){
+            /*j=4, так как 5 столбца*/
+            for (int j = 0; j < 5;j++){
                 switch (j){
                     case(1):/*Status*/
                         if (statBuffer.getTransactVector().elementAt(i) == null){
@@ -167,6 +170,10 @@ public class PrintStat {
                             bufData[i][j] = new String(String.valueOf(statBuffer.getTransactVector().elementAt(i).getTimeAddToBuffer()));
                         }
                         break;
+                    case (4):
+                        if (statModel.getBuffer().getNextPosToGet() == i){
+                            bufData[i][j] = new String(String.valueOf("|||||||||"));
+                        }
                 }
             }
         }
@@ -181,25 +188,38 @@ public class PrintStat {
         /*Модель для таблици приборов*/
         DefaultTableModel testDevModel = new DefaultTableModel(
                 devData,
-                new String[]{"Device","NextTime","Status","Transact","TotalUsedTime"}
+                new String[]{"Device","NextTime","Status","Transact","TotalUsedTime", "Next to use"}
         );
         /*Модель для таблици буфера*/
         DefaultTableModel testBufModel = new DefaultTableModel(
                 bufData,
-                new String[]{"Position","Status","Transact","TimeIn"}
+                new String[]{"Position","Status","Transact","TimeIn", "Next to get from"}
         );
         /*\обновление тавлиц*/
 
-        //todo сделать ожидание нажатия
-        if (SmoApp.checkStepStatistic) {
-            try {
-                SmoApp.smoForm.updateTables("Current Time = "+ curTime+ " " +eventName,
-                        testSrcModel,testDevModel,testBufModel
-                );
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        //todo Перенести сюда заполнение таблиц. сделать ожидание нажатия.
+        if (!SmoApp.checkEndModeling) {
+            SmoApp.smoForm.updateTables("Current Time = "+ curTime+ " " +eventName,
+                    testSrcModel,testDevModel,testBufModel
+            );
+
+            /*todo задержка нужна только для ожидания нажатия*/
+            while (!SmoApp.continueStepExecution && !SmoApp.checkEndModeling){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //SmoApp.smoForm.setVisible(true);
             }
+
+            SmoApp.continueStepExecution = false;
+//            try {
+//
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
 
         SmoApp.logger.info(stepStatText + "\n");

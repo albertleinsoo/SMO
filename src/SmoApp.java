@@ -1,6 +1,3 @@
-import SmoForm.SmoForm;
-import SmoForm.SmoFormButtonsListener;
-
 import javax.swing.*;
 import java.io.*;
 import java.util.Scanner;
@@ -14,9 +11,9 @@ public class SmoApp {
     public static PrintStat printStat;
     public static SmoForm smoForm = new SmoForm("SMO");
     /*для продолжения пошпговой статистики*/
-    public static boolean continueStepExecution = true;
+    public static boolean continueStepExecution = false;
     /*Пошаговое отображение, если true. Иначе моделирование без остановки*/
-    public static boolean checkStepStatistic = true;
+    public static boolean checkEndModeling = false;
 
     public static void main(String[] args) {
         logger.info("SMO::Start");

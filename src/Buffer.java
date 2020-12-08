@@ -224,4 +224,8 @@ public class Buffer extends ActiveObject {
     public void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
+
+    public int getNextPosToGet() {
+        return nextPosToGet;
+    }
 }

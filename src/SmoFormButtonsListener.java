@@ -1,5 +1,3 @@
-package SmoForm;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -9,9 +7,11 @@ public class SmoFormButtonsListener implements ActionListener {
         /*todo что-то здесь по нажатию кнопки*/
         /*"Next step"
         "Finish modeling"*/
-
         if (event.getActionCommand() == "Finish modeling"){
-
+            SmoApp.checkEndModeling = true;
+        }
+        if (event.getActionCommand() == "Next step"){
+            SmoApp.continueStepExecution = true;
         }
     }
 }

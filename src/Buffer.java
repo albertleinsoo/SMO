@@ -28,6 +28,7 @@ public class Buffer extends ActiveObject {
 
         /*есть ли свободный прибор*/
         if (findFreeDevice()){
+            pTransact.setTimeAddToBuffer(pTransact.getLastEventTime());
             addTransactToDeviceDispatcher(pTransact);
         }
         else{
@@ -41,15 +42,26 @@ public class Buffer extends ActiveObject {
                         pTransact.getLastEventTime());
             } else{ /*уничтожение */
                 int minPos = findMinTimePosition();
-                bufferTransactVector.elementAt(minPos).setTimeReject(pTransact.getLastEventTime());
-                bufferTransactVector.elementAt(minPos).setLastEventTime(pTransact.getLastEventTime());
+                Transact rejectedTransact = bufferTransactVector.elementAt(minPos);
+                rejectedTransact.setTimeReject(pTransact.getLastEventTime());
+                rejectedTransact.setLastEventTime(pTransact.getLastEventTime());
+                rejectedTransact.setTimeOutOfBuffer(pTransact.getLastEventTime());
+
+
 
                 SmoApp.logger.fine("Buffer:: Position= "+minPos+" Reject transact "
-                        + bufferTransactVector.elementAt(minPos).getObjectName() + " at time = "+ pTransact.getLastEventTime());
+                        + rejectedTransact.getObjectName() + " at time = "+ rejectedTransact.getTimeOutOfBuffer());
 
-                Transact rejectedTransact = bufferTransactVector.elementAt(minPos);
                 /*увеличиваем кол-во отказанных заявок источнику*/
                 rejectedTransact.getInitialSource().setRejectedCount(rejectedTransact.getInitialSource().getRejectedCount() +1);
+                /*запись в источник времени нахождения отказанной заявки в буфере*/
+                double tmpTimeInBuffer = rejectedTransact.getTimeOutOfBuffer() - rejectedTransact.getTimeAddToBuffer();
+                rejectedTransact.getInitialSource().setTotalTransactsTimeInBuffer(
+                        rejectedTransact.getInitialSource().getTotalTransactsTimeInBuffer() + tmpTimeInBuffer);
+                /*запись в источник времени нахождения отказанной заявки в системе*/
+                rejectedTransact.getInitialSource().setTotalTransactsTimeInModel(
+                        rejectedTransact.getInitialSource().getTotalTransactsTimeInModel() + tmpTimeInBuffer);
+
                 pTransact.setTimeAddToBuffer(pTransact.getLastEventTime());
                 bufferTransactVector.setElementAt(pTransact,minPos);
 
@@ -134,20 +146,23 @@ public class Buffer extends ActiveObject {
         for (int i = curDevToUseNum; i<deviceVectorPtr.size(); i++){
             if (!deviceVectorPtr.elementAt(i).getIsInUse()){
                 newCurDevToUseNum = i;
+                break;
             }
         }
 
-        if (newCurDevToUseNum == -1){
-            for (int i = 0; i<curDevToUseNum; i++){
-                if (!deviceVectorPtr.elementAt(i).getIsInUse()){
+        /*поиск 'по кольцу' от начала до указателя прибора*/
+        if (newCurDevToUseNum == -1) {
+            for (int i = 0; i < curDevToUseNum; i++) {
+                if (!deviceVectorPtr.elementAt(i).getIsInUse()) {
                     newCurDevToUseNum = i;
+                    break;
                 }
             }
         }
-
+        SmoApp.logger.fine("Buffer:: "+ pTransact.getObjectName() + " sending to device "+ deviceVectorPtr.elementAt(newCurDevToUseNum).getObjectName());
         deviceVectorPtr.elementAt(newCurDevToUseNum).useDevice(pTransact);
         deviceVectorPtr.elementAt(newCurDevToUseNum).setNextToUse(false);
-        SmoApp.logger.fine("Buffer:: "+ pTransact.getObjectName() + " sent to device "+ deviceVectorPtr.elementAt(newCurDevToUseNum).getObjectName());
+
 
         SmoApp.logger.fine("Buffer:: newCurDevToUseNum= " + newCurDevToUseNum);
         if (newCurDevToUseNum + 1 >= deviceVectorPtr.size()){

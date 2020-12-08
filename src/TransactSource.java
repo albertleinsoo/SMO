@@ -10,7 +10,14 @@ public class TransactSource extends ActiveObject {
     private Buffer buffer;
 
     /*для сбора статистики*/
-    public double timeLastTrCreated = -1;
+    private double timeLastTrCreated;
+
+    /*общее время нахождения заявок в буфере(как обраб, так и отказанных)*/
+    private double totalTransactsTimeInBuffer;
+    /*общее время обслуживания заявок приборами*/
+    private double totalTransactsTimeInDevice;
+    /*общее время жизни заявок*/
+    private double totalTransactsTimeInModel;
 
     public TransactSource(int sNum, double pLambda, Buffer pBuffer){
 
@@ -21,6 +28,10 @@ public class TransactSource extends ActiveObject {
         processedCount = 0;
         lambda = pLambda;
         buffer = pBuffer;
+        timeLastTrCreated = -1;
+        totalTransactsTimeInBuffer = 0;
+        totalTransactsTimeInDevice = 0;
+        totalTransactsTimeInModel = 0;
 
         nextEventTime = SmoApp.simpleFlow.getNextSimpleFlow(lambda);
         SmoApp.logger.info(objectName+ ":: Created. nextEventTime = " + nextEventTime);
@@ -45,6 +56,34 @@ public class TransactSource extends ActiveObject {
     }
 
     /*getters & setters */
+
+    public double getTimeLastTrCreated() {
+        return timeLastTrCreated;
+    }
+
+    public void setTotalTransactsTimeInBuffer(double totalTransactsTimeInBuffer) {
+        this.totalTransactsTimeInBuffer = totalTransactsTimeInBuffer;
+    }
+
+    public double getTotalTransactsTimeInBuffer() {
+        return totalTransactsTimeInBuffer;
+    }
+
+    public void setTotalTransactsTimeInDevice(double totalTransactsTimeInDevice) {
+        this.totalTransactsTimeInDevice = totalTransactsTimeInDevice;
+    }
+
+    public double getTotalTransactsTimeInDevice() {
+        return totalTransactsTimeInDevice;
+    }
+
+    public void setTotalTransactsTimeInModel(double totalTransactsTimeInModel) {
+        this.totalTransactsTimeInModel = totalTransactsTimeInModel;
+    }
+
+    public double getTotalTransactsTimeInModel() {
+        return totalTransactsTimeInModel;
+    }
 
     public void setRejectedCount(long rejectedCount) {
         this.rejectedCount = rejectedCount;

@@ -147,4 +147,13 @@ public class Model {
     public int getSourceCount() {
         return sourceCount;
     }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public int getDeviceCount() {
+        return deviceCount;
+    }
 }
+

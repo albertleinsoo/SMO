@@ -8,6 +8,7 @@ public class Transact {
     private double timeCreated;
     /*время добавления в буфер*/
     private double timeAddToBuffer;
+    private double timeOutOfBuffer;
     /*время добавления в прибор*/
     private  double timeAddToDevice;
     /*время конца обработки*/
@@ -28,6 +29,7 @@ public class Transact {
         objectName = "Tr"+initialSource.getSourceNum()+"."+transactNum;
 
         timeAddToBuffer = -1;
+        timeOutOfBuffer = -1;
         timeAddToDevice = -1;
         timeProcessed = -1;
         timeReject = -1;
@@ -35,6 +37,14 @@ public class Transact {
         SmoApp.logger.fine(objectName+":: Created at "+ timeCreated);
     }
     /*getters & setters*/
+
+    public double getTimeOutOfBuffer() {
+        return timeOutOfBuffer;
+    }
+
+    public void setTimeOutOfBuffer(double timeOutOfBuffer) {
+        this.timeOutOfBuffer = timeOutOfBuffer;
+    }
 
     public String getObjectName() {
         return objectName;

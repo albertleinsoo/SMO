@@ -41,10 +41,15 @@ public class Device extends ActiveObject{
         isInUse = true;
         transactInDevice = pTransact;
         transactInDevice.setTimeAddToDevice(pTransact.getLastEventTime());
+        transactInDevice.setTimeOutOfBuffer(pTransact.getLastEventTime());
 
+        /*запись в источник времени нахождения выбранной на обслуживание заявки в буфере*/
+        double tmpTimeInBuffer = transactInDevice.getTimeOutOfBuffer() - transactInDevice.getTimeAddToBuffer();
+        transactInDevice.getInitialSource().setTotalTransactsTimeInBuffer(
+                transactInDevice.getInitialSource().getTotalTransactsTimeInBuffer() + tmpTimeInBuffer);
 
         double tmpDeltaTime = SmoApp.simpleFlow.getNextExpFlow(lambdaDevice);
-        totalUsedTime=+ tmpDeltaTime;
+        totalUsedTime = totalUsedTime + tmpDeltaTime;
         nextEventTime = transactInDevice.getLastEventTime() + tmpDeltaTime;
 
         SmoApp.logger.fine(objectName + ":: in use. Transact: "+ transactInDevice.getObjectName() + " nextEventTime "+ nextEventTime);
@@ -60,11 +65,21 @@ public class Device extends ActiveObject{
         transactInDevice.setLastEventTime(nextEventTime);
         transactInDevice.setTimeProcessed(nextEventTime);
         transactInDevice.getInitialSource().setProcessedCount(transactInDevice.getInitialSource().getProcessedCount() + 1);
+
+        /*запись в источник времени нахождения выбранной на обслуживание заявки в приборе*/
+        double tmpTimeInDevice = transactInDevice.getTimeProcessed() - transactInDevice.getTimeAddToDevice();
+        transactInDevice.getInitialSource().setTotalTransactsTimeInDevice(
+                transactInDevice.getInitialSource().getTotalTransactsTimeInDevice() + tmpTimeInDevice);
+        /*запись в источник времени нахождения обработанной заявки в системе*/
+        double tmpTimeInModel = transactInDevice.getTimeProcessed() - transactInDevice.getTimeCreated();
+        transactInDevice.getInitialSource().setTotalTransactsTimeInModel(
+                transactInDevice.getInitialSource().getTotalTransactsTimeInModel() + tmpTimeInModel);
+
         /*прибор свободен*/
         nextEventTime = -1;
         processedTransactCount++;
 
-        SmoApp.printStat.printStepStatistic(getObjectName()+" released "+ transactInDevice.getObjectName(),transactInDevice.getTimeAddToDevice());
+        SmoApp.printStat.printStepStatistic(getObjectName()+" released "+ transactInDevice.getObjectName(),transactInDevice.getTimeProcessed());
 
         transactInDevice = null;
     }

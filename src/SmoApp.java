@@ -1,3 +1,7 @@
+import SmoForm.SmoForm;
+import SmoForm.SmoFormButtonsListener;
+
+import javax.swing.*;
 import java.io.*;
 import java.util.Scanner;
 import java.util.Vector;
@@ -8,15 +12,27 @@ public class SmoApp {
     public static final Logger logger = Logger.getLogger(SmoApp.class.getName());
     public static final EventFlow simpleFlow = new EventFlow();
     public static PrintStat printStat;
+    public static SmoForm smoForm = new SmoForm("SMO");
+    /*для продолжения пошпговой статистики*/
+    public static boolean continueStepExecution = true;
+    /*Пошаговое отображение, если true. Иначе моделирование без остановки*/
+    public static boolean checkStepStatistic = true;
 
     public static void main(String[] args) {
         logger.info("SMO::Start");
 
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                createGUI();
+            }
+        });
+
+        //smoForm = new SmoForm("SMO");
+
         /* количество реализаций модели */
         long maxTransactCount = 10; //TODO определить количество реализаций
 
-        int transactSourceCount = 0;
-        int deviceCount = 0;
         int bufferSize = 0;
 
         /*интенсивности источников*/
@@ -67,6 +83,17 @@ public class SmoApp {
         printStat = new PrintStat(smoModel);
         smoModel.runModel();
         //} // конец цикла моделирования
+
+    }
+    private static void createGUI(){
+        //smoForm = new SmoForm("SMO");
+//        JPanel root = smoForm.getRootPanel();
+//        JFrame frame = new JFrame();
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setContentPane(root);
+//        frame.pack();
+//        frame.setLocationRelativeTo(null);
+//        frame.setVisible(true);
     }
 
 }
